@@ -122,32 +122,31 @@ function createSlug(title: string): string {
 }
 
 // Normalize dates to YYYY-MM-DD and times to 24-hour HH:mm.
+
 function normalizeDate(value: string): string {
   const input = value.trim();
-  const date = new Date(input);
 
-  if (Number.isNaN(date.getTime())) {
-    throw new Error("Event date must be a valid date.");
+  // Accept only the ISO calendar-date format.
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(input)) {
+    throw new Error("Event date must use YYYY-MM-DD format.");
   }
 
-  // Preserve date-only inputs without timezone conversion.
-  if (/^\d{4}-\d{2}-\d{2}$/.test(input)) {
-    const [year, month, day] = input.split("-").map(Number);
-    const check = new Date(Date.UTC(year, month - 1, day));
+  const [year, month, day] = input.split("-").map(Number);
 
-    if (
-      check.getUTCFullYear() !== year ||
-      check.getUTCMonth() !== month - 1 ||
-      check.getUTCDate() !== day
-    ) {
-      throw new Error("Event date must be a valid calendar date.");
-    }
+  // Validate the actual calendar date, not just its string format.
+  const date = new Date(Date.UTC(year, month - 1, day));
 
-    return input;
+  if (
+    date.getUTCFullYear() !== year ||
+    date.getUTCMonth() !== month - 1 ||
+    date.getUTCDate() !== day
+  ) {
+    throw new Error("Event date must be a valid calendar date.");
   }
 
-  return date.toISOString().slice(0, 10);
+  return input;
 }
+
 
 function normalizeTime(value: string): string {
   const input = value.trim();
